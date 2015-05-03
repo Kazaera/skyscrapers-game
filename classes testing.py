@@ -43,7 +43,7 @@ class SudButton(Button):
                         activeforeground="white",
                         disabledforeground="white",
                         background="white",
-                        activebackground="grey",
+                        highlightbackground="blue",
                         width=1,
                         relief=FLAT,
                         command=self.click)
@@ -64,9 +64,10 @@ class SudButton(Button):
             self.parent.values.remove(n)
         # if there's now only one value, send it to the big label!
         if len(self.parent.values)==1:
-            self.parent.thevalue.set(str(self.parent.values[0]))
+            self.parent.thevalue=(str(self.parent.values[0]))
         else:
-            self.parent.thevalue.set("")
+            self.parent.thevalue=""
+        self.parent.label.config(text=self.parent.thevalue)
     # option to remove entirely if we're playing with a less than 9x9 grid
     def kill(self):
         self.config(state=DISABLED)
@@ -84,14 +85,25 @@ class SudBox(Frame):
                 self.buttons[n]=SudButton(self,n)
                 self.buttons[n].grid(row=i,column=j)
         # and one big label if there's only one selected?
-        self.thevalue=StringVar()
-        self.label=Label(self,textvariable=self.thevalue, bg="white")
+        self.thevalue=""
+        self.label=Label(self,
+                         text="",
+                         font=("Helvetica", 32),
+                         bg="white")
         # said label fills out the entire box
         self.label.grid(row=0,column=0, rowspan=3, columnspan=3, sticky=N+S+W+E)
         self.label.lower(self.buttons[1])
-        self.label.lift(self.buttons[9])
         # and a list of values
         self.values=[]
+        self.bind("<Enter>", self.onEnter)
+        self.bind("<Leave>", self.onLeave)
+    def onLeave(self, event):
+        if self.thevalue:
+            self.label.lift(self.buttons[9])
+        else:
+            self.label.lower(self.buttons[1])
+    def onEnter(self, event):
+        self.label.lower(self.buttons[1])
 
 # plan for the future: make this into a hoverbox
 # showing how many skyscrapers the box currently sees
